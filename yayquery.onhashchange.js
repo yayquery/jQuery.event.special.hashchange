@@ -14,14 +14,12 @@ $(function ($) {
 var
 
 	// Caching etc.
-	undefined,
-	w = window,
-	wl = w.location,
+	undefined, w = window, wl = w.location,
 
 	// Checks if the browser supports the event natively (checks all browsers except IE8,
 	// which can report this as a false-positive, kudos to Ben Alman for this). We avoid using
 	// $.browser, we don't want to sniff that browser, yo!
-	nativeSupport = ('onhashchange' in window) && !(window.console && !$.support.style),
+	nativeSupport = ('onhashchange' in w) && !(w.console && !$.support.style),
 
 	// Used to keep track of the setInterval
 	evtTimer,
@@ -30,7 +28,7 @@ var
 	evtPollInterval = 80,
 
 	// Will contain the last known hash
-	lastHash =wl.hash,
+	lastHash = wl.hash,
 
 	// The object actually handling the simulated event, never used by the native ones.
 	simulEvt = {
@@ -54,16 +52,19 @@ var
 		}
 	},
 
+	// Curry function for invoking the simulated event (or cancel out browsers with native
+	// support)
 	hashFn = function (str) {
-		if (nativeSupport) return false;
-
-		simulEvt[str]();
+		return function () {
+			if (nativeSupport) return false;
+			simulEvt[str]();
+		};
 	};
 
-// Set up the special event object
+// Set up the special event object, tiny - innit? :-)
 $.event.special.hashchange = {
-	setup:    function () { return hashFn('start'); },
-	teardown: function () { return hashFn('stop');  }
+	setup:    hashFn('start'),
+	teardown: hashFn('stop')
 }
 
 }(jQuery));
